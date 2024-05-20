@@ -103,3 +103,8 @@ test("Load box", async () => {
   expect(box_data.id).toBe(box_id);
   expect(typeof box_data.manager).toBe("string");
 });
+
+test("Delete session", async () => {
+  const status = await client.store.deleteSession(session.id);
+  expect(status).toBe(true);
+});

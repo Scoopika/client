@@ -1,4 +1,5 @@
 import {
+  DeleteSessionRequest,
   GetSessionRequest,
   GetSessionRunsRequest,
   ListUserSessionsRequest,
@@ -30,6 +31,23 @@ class Store {
     const session = this.client.readResponse<StoreSession>(response);
 
     return session;
+  }
+
+  async deleteSession(id: string) {
+    let response: string = "";
+    const onMessage = (s: string) => {
+      response += s;
+    };
+
+    const req: DeleteSessionRequest = {
+      type: "delete_session",
+      payload: { id },
+    };
+
+    await this.client.request(req, onMessage);
+    const result = this.client.readResponse<{ success: boolean }>(response);
+
+    return result.success ?? false;
   }
 
   async newSession(data?: {
