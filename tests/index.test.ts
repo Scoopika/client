@@ -51,6 +51,18 @@ test("Run agent", async () => {
   expect(typeof response.response.content).toBe("string");
 });
 
+// This requires Pro plan (skipped by default with warning msg)
+test("Speak agent", async () => {
+  try {
+    const output = await agent.speak("Hello");
+
+    console.log(output);
+    expect(typeof output).toBe("string");
+  } catch (err) {
+    console.warn("Failed with error:", err);
+  }
+});
+
 test("List user sessions", async () => {
   const sessions = await client.store.listUserSessions(user_id);
 

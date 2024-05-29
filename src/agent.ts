@@ -30,6 +30,27 @@ class Agent {
     return agent;
   }
 
+  async speak(text: string, language: types.SpeakLanguages = "en") {
+    let response: string = "";
+    const onMessage = (s: string) => {
+      response += s;
+    };
+
+    const req: types.SpeakAgentRequest = {
+      type: "speak",
+      payload: {
+        id: this.id,
+        text,
+        language,
+      },
+    };
+
+    await this.client.request(req, onMessage);
+    const output = this.client.readResponse<{ output: string }>(response);
+
+    return output.output;
+  }
+
   async run({
     inputs,
     hooks,
