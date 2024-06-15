@@ -8,7 +8,7 @@ class RunVoicePlayer {
   paused: boolean = false;
   started: boolean = false;
 
-  constructor(elm: HTMLAudioElement | "string") {
+  constructor(elm: HTMLAudioElement | string) {
     const element = (
       typeof elm === "string" ? document.getElementById(elm) : elm
     ) as HTMLAudioElement;

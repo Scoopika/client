@@ -10,8 +10,8 @@ class VoiceVisualizer {
   private added: boolean = false;
 
   constructor(
-    elm: HTMLAudioElement | "string",
-    canvas: HTMLCanvasElement | "string",
+    elm: HTMLAudioElement | string,
+    canvas: HTMLCanvasElement | string,
     color: string = "#000000",
   ) {
     const element = (
