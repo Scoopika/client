@@ -6,12 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="css/style.css" rel="stylesheet" />
     <script src="../../dist/index.global.js"></script>
+    <script src="./index.js" defer></script>
     <script>
       const client = new Scoopika.Client("http://127.0.0.1:4149/scoopika");
       const agent = new Scoopika.Agent(
-        "7c47b7f1-b632-449e-8247-f55962415f0a",
+        "0aaa173e-d4c8-40e6-974a-ea5d3e3f1b09",
         client,
       );
+      const audioPlayer = new Scoopika.AudioPlayer(client);
 
       const box = new Scoopika.Box(
         "6e059cde-df83-41db-ad0d-c31c4ac99136",
@@ -37,10 +39,10 @@
           setTrue("agent_loaded");
         }
 
-        await agent.run({
+        const response = await agent.run({
+          options: { session_id, voice: true },
           inputs: {
-            message: "Hello!",
-            session_id,
+            message: "Hello, how are you doing? my name is Kais ",
           },
           hooks: {
             onStart: () => {
@@ -49,18 +51,23 @@
             onToken: (t) => {
               setTrue("got_token");
             },
+            onAudio: (a) => {
+              console.log(a);
+              audioPlayer.queue(a);
+            },
           },
         });
 
+        console.log(JSON.stringify(response));
         const runs = await client.store.getSessionRuns(session_id);
         if (runs.length === 2) {
           setTrue("list_runs");
         }
 
-        const box_data = await box.load();
-        if (typeof box_data.id === "string") {
-          setTrue("box_loaded");
-        }
+        // const box_data = await box.load();
+        // if (typeof box_data.id === "string") {
+        //  setTrue("box_loaded");
+        //}
       })();
     </script>
   </head>

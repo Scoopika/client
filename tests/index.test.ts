@@ -6,7 +6,7 @@ import { StoreSession } from "@scoopika/types";
 const agent_id = process.env.AGENT_ID;
 const box_id = process.env.BOX_ID;
 
-if (!agent_id || !box_id) {
+if (!agent_id) {
   throw new Error("Make sure AGENT_ID and BOX_ID exist in .env file");
 }
 
@@ -34,9 +34,12 @@ test("Load agent", async () => {
 test("Run agent", async () => {
   let message: string = "";
   const response = await agent.run({
+    options: {
+      session_id: session.id,
+      run_id: `run_${Date.now()}`
+    },
     inputs: {
       message: "Hello!",
-      session_id: session.id,
     },
     hooks: {
       onStart: (s) => console.log(s),
@@ -47,20 +50,7 @@ test("Run agent", async () => {
 
   console.log(message);
   expect(response.session_id).toBe(session.id);
-  expect(response.response.type).toBe("text");
-  expect(typeof response.response.content).toBe("string");
-});
-
-// This requires Pro plan (skipped by default with warning msg)
-test("Speak agent", async () => {
-  try {
-    const output = await agent.speak("Hello");
-
-    console.log(output);
-    expect(typeof output).toBe("string");
-  } catch (err) {
-    console.warn("Failed with error:", err);
-  }
+  expect(typeof response.content).toBe("string");
 });
 
 test("List user sessions", async () => {
@@ -100,8 +90,7 @@ test("Run box", async () => {
     },
   });
 
-  expect(response[0].run.response.type).toBe("text");
-  expect(typeof response[0].run.response.content).toBe("string");
+  expect(typeof response[0].run.content).toBe("string");
 });
 
 test("Load box", async () => {

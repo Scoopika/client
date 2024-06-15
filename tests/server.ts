@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { Scoopika, Container } from "@scoopika/scoopika";
+import { Scoopika, Endpoint } from "../../main/dist/";
 
 const scoopika_token = process.env.SCOOPIKA_TOKEN;
 const agent_id = process.env.AGENT_ID;
@@ -13,13 +13,13 @@ if (!scoopika_token || !agent_id) {
 }
 
 const scoopika = new Scoopika({
-  token: scoopika_token,
+  // store: process.env.STORE_ID,
   engines: {
     fireworks: process.env.FIREWORKS_TOKEN,
   },
 });
 
-const container = new Container({
+const endpoint = new Endpoint({
   scoopika,
   agents: [agent_id],
   boxes: box_id ? [box_id] : [],
@@ -27,10 +27,10 @@ const container = new Container({
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use("/*", cors());
 
 app.post("/scoopika", (req, res) =>
-  container.handleRequest({
+  endpoint.handleRequest({
     request: req.body,
     stream: (s) => res.write(s),
     end: () => res.end(),

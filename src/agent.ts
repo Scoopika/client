@@ -7,6 +7,7 @@ class Agent {
   id: string;
   client: Client;
   client_actions: types.ToolSchema[] = [];
+  paused_runs: string[] = [];
 
   constructor(id: string, client: Client) {
     this.id = id;
@@ -30,41 +31,28 @@ class Agent {
     return agent;
   }
 
-  async speak(text: string, language: types.SpeakLanguages = "en") {
-    let response: string = "";
-    const onMessage = (s: string) => {
-      response += s;
-    };
-
-    const req: types.SpeakAgentRequest = {
-      type: "speak",
-      payload: {
-        id: this.id,
-        text,
-        language,
-      },
-    };
-
-    await this.client.request(req, onMessage);
-    const output = this.client.readResponse<{ output: string }>(response);
-
-    return output.output;
-  }
-
   async run({
     inputs,
     hooks,
+    options,
   }: {
-    inputs: types.Inputs;
+    inputs: types.RunInputs;
+    options?: types.RunOptions;
     hooks?: types.Hooks;
   }): Promise<types.AgentResponse> {
     if (!hooks) {
       hooks = {};
     }
 
+    options = options ?? {};
+    options.run_id = options.run_id ?? "run_" + crypto.randomUUID();
+
     let response: types.AgentResponse | undefined = undefined;
     hooks.onClientSideAction = (action) =>
-      executeAction(action, [...(inputs.tools || []), ...this.client_actions]);
+      executeAction(action, [
+        ...(options?.tools || []),
+        ...this.client_actions,
+      ]);
     hooks.onAgentResponse = (action) => {
       response = action.response;
     };
@@ -74,15 +62,17 @@ class Agent {
       type: "run_agent",
       payload: {
         id: this.id,
-        inputs: {
-          ...inputs,
-          tools: [...(inputs.tools || []), ...this.client_actions],
+        inputs,
+        options: {
+          ...(options || {}),
+          tools: [...(options?.tools || []), ...this.client_actions],
         },
         hooks: used_hooks,
       },
     };
 
     const onMessage = async (s: string) => {
+      if (this.paused_runs.indexOf(options.run_id || "NONE") !== -1) return;
       await executeStreamHooks(s, hooks);
     };
 

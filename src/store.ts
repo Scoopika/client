@@ -1,5 +1,6 @@
 import {
   DeleteSessionRequest,
+  GetRunRequest,
   GetSessionRequest,
   GetSessionRunsRequest,
   ListUserSessionsRequest,
@@ -105,6 +106,25 @@ class Store {
     }>(response);
 
     return runs.runs;
+  }
+
+  async getRun(
+    session: StoreSession | string,
+    run_id: string,
+    role?: "agent" | "user",
+  ) {
+    let response: string = "";
+    const onMessage = (s: string) => (response += s);
+
+    const req: GetRunRequest = {
+      type: "get_run",
+      payload: { session, run_id, role },
+    };
+
+    await this.client.request(req, onMessage);
+    const run = this.client.readResponse<{ run: RunHistory[] }>(response);
+
+    return run.run;
   }
 }
 

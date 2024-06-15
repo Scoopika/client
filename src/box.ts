@@ -34,9 +34,11 @@ class Box {
 
   async run({
     inputs,
+    options,
     hooks,
   }: {
-    inputs: types.Inputs;
+    inputs: types.RunInputs;
+    options?: types.RunOptions;
     hooks?: types.BoxHooks;
   }): Promise<
     {
@@ -56,7 +58,10 @@ class Box {
       | undefined = undefined;
 
     hooks.onClientSideAction = (action) =>
-      executeAction(action, [...(inputs.tools || []), ...this.client_actions]);
+      executeAction(action, [
+        ...(options?.tools || []),
+        ...this.client_actions,
+      ]);
     hooks.onBoxFinish = (action) => {
       response = action;
     };
@@ -67,9 +72,10 @@ class Box {
       type: "run_box",
       payload: {
         id: this.id,
-        inputs: {
-          ...inputs,
-          tools: [...(inputs.tools || []), ...this.client_actions],
+        inputs,
+        options: {
+          ...(options || {}),
+          tools: [...(options?.tools || []), ...this.client_actions],
         },
         hooks: used_hooks,
       },

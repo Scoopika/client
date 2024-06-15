@@ -15,6 +15,7 @@ export async function executeStreamHooks(value: string, hooks: BoxHooks) {
     stream: hooks.onStream,
     response: hooks.onFinish,
     token: hooks.onToken,
+    audio: hooks.onAudio,
     tool_call: hooks.onToolCall,
     tool_result: hooks.onToolResult,
     agent_response: hooks.onAgentResponse,
