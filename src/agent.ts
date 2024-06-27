@@ -2,6 +2,10 @@ import * as types from "@scoopika/types";
 import Client from "./client";
 import { executeStreamHooks } from "./lib/read_stream";
 import executeAction from "./lib/actions_executer";
+import { z } from "zod";
+import { createAction } from "./actions/create_action";
+import madeActionToFunctionTool from "./lib/made_action_to_function_tool";
+import zodToJsonSchema from "zod-to-json-schema";
 
 class Agent {
   id: string;
@@ -29,6 +33,41 @@ class Agent {
     const agent = this.client.readResponse<types.AgentData>(response);
 
     return agent;
+  }
+
+  public async structuredOutput<
+    SCHEMA extends z.ZodTypeAny = any,
+    DATA = z.infer<SCHEMA>,
+  >({
+    inputs,
+    options,
+    schema,
+    system_prompt,
+  }: {
+    inputs: types.RunInputs;
+    options?: types.RunOptions;
+    schema: SCHEMA;
+    system_prompt?: string;
+  }): Promise<DATA> {
+    let response: string = "";
+    const onMessage = (s: string) => (response += s);
+
+    const json = zodToJsonSchema(schema);
+    const req: types.GenerateJSONRequest = {
+      type: "generate_json",
+      payload: {
+        id: this.id,
+        inputs,
+        options,
+        system_prompt,
+        schema: json as any,
+      },
+    };
+
+    await this.client.request(req, onMessage);
+    const data = this.client.readResponse<DATA>(response);
+
+    return data;
   }
 
   async run({
@@ -85,18 +124,28 @@ class Agent {
     return response;
   }
 
-  addClientAction<Data = any>(
-    func: (args: Data) => any,
-    tool: types.ToolFunction,
+  addClientAction<PARAMETERS extends z.ZodTypeAny, RESULT = any>(
+    tool?: types.CoreTool<PARAMETERS, RESULT>,
   ) {
-    this.client_actions.push({
-      type: "client-side",
-      executor: func,
-      tool: {
-        type: "function",
-        function: tool,
-      },
-    });
+    if (!tool) return;
+
+    const action = createAction(tool);
+    this.client_actions = [
+      ...this.client_actions.filter(
+        (a) => a.tool.function.name !== action.schema.name,
+      ),
+      madeActionToFunctionTool(action),
+    ];
+  }
+
+  removeClientAction(name: string) {
+    this.client_actions = this.client_actions.filter(
+      (c) => c.tool.function.name !== name,
+    );
+  }
+
+  cancelRun(run_id: string) {
+    this.paused_runs.push(run_id);
   }
 }
 

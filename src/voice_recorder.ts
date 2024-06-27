@@ -31,7 +31,6 @@ class VoiceRecorder {
   onAudioProcess?: (dataArray: Uint8Array) => any;
   onText?: OnTextCallback;
   visualizer?: (dataArray: Uint8Array) => any;
-  private dataRequestInterval: number | null = null;
   smoothDataArray = new Array(4).fill(0);
   circleRadius: number = 0;
 
@@ -81,21 +80,6 @@ class VoiceRecorder {
     processAudio();
   }
 
-  private startDataRequests() {
-    if (this.mediaRecorder) {
-      this.dataRequestInterval = window.setInterval(() => {
-        this.mediaRecorder?.requestData();
-      }, 100);
-    }
-  }
-
-  private stopDataRequests() {
-    if (this.dataRequestInterval) {
-      clearInterval(this.dataRequestInterval);
-      this.dataRequestInterval = null;
-    }
-  }
-
   async init(): Promise<boolean> {
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -111,29 +95,23 @@ class VoiceRecorder {
 
       const changeState = this.changeState.bind(this);
       const handleChunk = this.handleChunk.bind(this);
-      const startDataRequests = this.startDataRequests.bind(this);
-      const stopDataRequests = this.stopDataRequests.bind(this);
       const startAnalyser = this.startAnalyser.bind(this);
 
       this.mediaRecorder.addEventListener("start", () => {
         changeState("recording");
-        startDataRequests();
         startAnalyser();
       });
 
       this.mediaRecorder.addEventListener("stop", () => {
         changeState("stopped");
-        stopDataRequests();
       });
 
       this.mediaRecorder.addEventListener("pause", () => {
         changeState("paused");
-        stopDataRequests();
       });
 
       this.mediaRecorder.addEventListener("resume", () => {
         changeState("recording");
-        startDataRequests();
         startAnalyser();
       });
 

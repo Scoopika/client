@@ -21,11 +21,21 @@ class RunVoicePlayer {
     this.elm.crossOrigin = "anonymous";
   }
 
-  async queue(stream: AudioStream) {
+  async queue(stream: AudioStream | AudioStream[]) {
+    if (Array.isArray(stream)) {
+      for (const s of stream) {
+        this.queue(s);
+      }
+      return;
+    }
+
     this.started = true;
     const url = stream.read;
 
     if (stream.index === 0) {
+      this.listeners = {};
+      this.done_indexes = [];
+      this.paused = false;
       this.play(stream.index, url);
       return;
     }
@@ -62,13 +72,21 @@ class RunVoicePlayer {
   }
 
   public resume() {
-    if (!this.paused) return;
+    if (!this.paused || !this.started) return;
     this.elm.play();
     this.paused = false;
   }
 
   public isDone(length: number) {
     return this.done_indexes.length === length;
+  }
+
+  public newRun() {
+    this.listeners = {};
+    this.done_indexes = [];
+    this.started = false;
+    this.paused = false;
+    this.elm.src = "";
   }
 
   public async finish(length: number) {
@@ -78,7 +96,6 @@ class RunVoicePlayer {
 
     this.done_indexes = [];
     this.listeners = {};
-    this.elm.src = "";
     this.started = false;
     return true;
   }

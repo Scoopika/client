@@ -14,7 +14,7 @@ if (!scoopika_token || !agent_id) {
 
 const scoopika = new Scoopika({
   // store: process.env.STORE_ID,
-  engines: {
+  keys: {
     fireworks: process.env.FIREWORKS_TOKEN,
   },
 });

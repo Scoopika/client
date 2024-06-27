@@ -1,4 +1,4 @@
-import { BoxHooks, Hooks, ServerStream } from "@scoopika/types";
+import { BoxHooks, ServerStream } from "@scoopika/types";
 import { ReadableStreamReadResult } from "stream/web";
 import streamMessages from "./stream_messages";
 
@@ -24,6 +24,7 @@ export async function executeStreamHooks(value: string, hooks: BoxHooks) {
     box_response: hooks.onBoxFinish,
     client_action: hooks.onClientSideAction,
     end: undefined,
+    generated_json: undefined, // support coming soon
   };
 
   const func = mappings[type];

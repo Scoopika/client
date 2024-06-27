@@ -89,6 +89,25 @@ class Store {
     return sessions.sessions;
   }
 
+  async getSessionMessages(session_id: string) {
+    let response: string = "";
+    const onMessage = (s: string) => (response += s);
+
+    const req: GetSessionRunsRequest = {
+      type: "get_session_runs",
+      payload: {
+        id: session_id,
+      },
+    };
+
+    await this.client.request(req, onMessage);
+    const runs = this.client.readResponse<{
+      runs: RunHistory[];
+    }>(response);
+
+    return runs.runs;
+  }
+
   async getSessionRuns(session_id: string) {
     let response: string = "";
     const onMessage = (s: string) => (response += s);
