@@ -1,6 +1,6 @@
 {
   "name": "@scoopika/client",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Run AI agents & boxes on the client side with real-time streaming hooks and client-side actions",
   "main": "./index.js",
   "types": "./index.d.ts",

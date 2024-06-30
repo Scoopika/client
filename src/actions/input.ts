@@ -15,10 +15,6 @@ export default function createAIInput(
     typeof elm === "string" ? document.getElementById(elm) : elm
   ) as HTMLInputElement;
 
-  if (!element) {
-    throw new Error(`Button element not found!`);
-  }
-
   const text = element.id || element.placeholder;
   description =
     description ??
@@ -29,6 +25,9 @@ export default function createAIInput(
     name: `enter_value_in_${text.toLowerCase().replace(" ", "_")}`,
     description,
     execute: async ({ value }) => {
+      if (!element) {
+        throw new Error(`Button element not found!`);
+      }
       element.value = value;
     },
     parameters: z.object({

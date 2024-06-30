@@ -15,10 +15,6 @@ export default function createAIButton(
     typeof elm === "string" ? document.getElementById(elm) : elm
   ) as HTMLElement;
 
-  if (!element) {
-    throw new Error(`Button element not found!`);
-  }
-
   const text = element.innerText;
   description =
     description ??
@@ -29,6 +25,9 @@ export default function createAIButton(
     name: `click_${text.toLowerCase().replace(" ", "_")}`,
     description,
     execute: async ({ delay }) => {
+      if (!element) {
+        throw new Error(`Button element not found!`);
+      }
       if (typeof delay === "number") await sleep(delay);
       element.click();
     },
