@@ -38,16 +38,18 @@
 
             const client = new Scoopika.Client("http://127.0.0.1:4149/scoopika");
             const agent = new Scoopika.Agent(
-              "0aaa173e-d4c8-40e6-974a-ea5d3e3f1b09", client
+              "7bfdb069-6da6-4236-b54e-2fcb8a726644", client
             );
 
             const recorder = new Scoopika.VoiceRecorder({
-              onText: (t) => document.getElementById("text").innerText = t
+              onText: (t) => document.getElementById("text").innerText = t,
+              onAudioChunk: (a) => console.log(a)
             });
 
             const visualizer = new Scoopika.VoiceVisualizer("voice-player", canvas);
 
             sendButton.addEventListener('click', async () => {
+            recorder.stop();
               const audioInput = await recorder.asRunInput();
               console.log(audioInput);
               const player = new Scoopika.RunAudioPlayer("voice-player");

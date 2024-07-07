@@ -1,4 +1,4 @@
-import { FunctionToolSchema, ToolFunction } from "@scoopika/types";
+import { ClientSideToolSchema, ToolFunction } from "@scoopika/types";
 
 export default function madeActionToFunctionTool({
   execute,
@@ -6,9 +6,9 @@ export default function madeActionToFunctionTool({
 }: {
   execute: (inputs: any) => any;
   schema: ToolFunction;
-}): FunctionToolSchema {
+}): ClientSideToolSchema {
   return {
-    type: "function",
+    type: "client-side",
     executor: execute,
     tool: {
       type: "function",

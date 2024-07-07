@@ -144,6 +144,10 @@ class Agent {
     );
   }
 
+  removeAllClientActions() {
+    this.client_actions = [];
+  }
+
   cancelRun(run_id: string) {
     this.paused_runs.push(run_id);
   }

@@ -17,6 +17,7 @@ class VoiceRecorder {
   private audioChunks: Blob[] = [];
   private stream: MediaStream | null = null;
   audioBlob: Blob | null = null;
+  started: boolean = false;
 
   private audioContext: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
@@ -154,6 +155,7 @@ class VoiceRecorder {
           this.text += transcript;
         }
       }
+
       this.text = fullTranscript;
       if (this.onText) this.onText(this.text);
     };
@@ -189,6 +191,7 @@ class VoiceRecorder {
       if (!this.isRecording && this.mediaRecorder) {
         this.mediaRecorder.start();
         this.isRecording = true;
+        this.started = true;
         this.isPaused = false;
         this.startSpeechRecognition();
       }
@@ -204,6 +207,15 @@ class VoiceRecorder {
     this.changeState("stopped");
 
     if (this.visualizer) this.visualizer([] as any);
+
+    return this;
+  }
+
+  cancel() {
+    this.stop();
+    this.started = false;
+    this.isRecognitionFinished = true;
+    this.text = "";
 
     return this;
   }
@@ -231,13 +243,13 @@ class VoiceRecorder {
     }
   }
 
-  getBlob(): Blob {
-    if (!this.audioBlob) throw new Error("No audio blob available");
+  getBlob(): Blob | null {
+    if (!this.audioBlob) return null;
     return this.audioBlob;
   }
 
-  getObjectUrl(): string {
-    if (!this.audioBlob) throw new Error("No audio blob available");
+  getObjectUrl(): string | null {
+    if (!this.audioBlob) return null;
     const url = URL.createObjectURL(this.audioBlob);
     return url;
   }
@@ -250,7 +262,7 @@ class VoiceRecorder {
     return null;
   }
 
-  async asRunInput(): Promise<RunInputs | undefined> {
+  async asRunInput(): Promise<RunInputs | null> {
     if (this.recognition) {
       while (!this.isRecognitionFinished) {
         await sleep(5);
@@ -265,7 +277,7 @@ class VoiceRecorder {
 
     return new Promise((resolve) => {
       if (!this.audioBlob) {
-        resolve(undefined);
+        resolve(null);
         return;
       }
 
@@ -289,6 +301,7 @@ class VoiceRecorder {
 
   async finish() {
     this.stop();
+    this.started = false;
 
     if (!this.recognition) {
       return this;
